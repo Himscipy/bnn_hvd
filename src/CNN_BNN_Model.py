@@ -13,11 +13,9 @@ import numpy as np
 import time
 from tensorflow import keras
 import pickle
-from mpi4py import MPI
 import tensorflow_probability as tfp
 import sys
 from absl import flags
-from tensorflow.python.client import timeline
 
 tfp_layers = tfp.layers
 
@@ -25,19 +23,20 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 tfd = tfp.distributions
 
-flags.DEFINE_string("data_dir",default='/home/hsharma/mnist.npz',
+flags.DEFINE_string("data_dir",default='/home/hsharma/WORK/Project_BNN/bnn_hvd/DATA/mnist.npz',
                     help="Directory where data is stored (if using real data).")
 flags.DEFINE_string("model_data",default='./results/',help='Define the data directory')
-flags.DEFINE_integer("batch_size",default=128,help='Batch size')
+flags.DEFINE_integer("batch_size",default=64,help='Batch size')
 flags.DEFINE_integer("iteration",default=8000,help='Iterations to train for')
 flags.DEFINE_bool('compression',default=False,help='Compression of grad to fp16')
+flags.DEFINE_bool('verbose',default=False,help='Verbose for printing')
 flags.DEFINE_string('cnnConv',default='CNN_conv',help='CNN with Convolutional Layers')
 flags.DEFINE_string('bnnConv',default='BNN_conv_flip',help='FC and Convolutional Layers type')
 flags.DEFINE_integer("num_intra",default=128,help='Intra Threading')
 flags.DEFINE_integer("num_inter",default=1,help='Inter threading')
 flags.DEFINE_integer("kmp_blocktime",default=0,help='KMP_BLOCKTIME setting')
 flags.DEFINE_string("kmp_affinity",default='granularity=fine,verbose,compact,1,0',help='granularity setting')
-flags.DEFINE_string("Model_type",default='CNN', help="Select the type of model options(BNN,CNN)")
+flags.DEFINE_string("Model_type",default='BNN', help="Select the type of model options(BNN,CNN)")
 
 
 FLAGS = flags.FLAGS  
@@ -149,7 +148,6 @@ def train_input_generator(x_train, y_train, batch_size=64):
 def main(_):
     tf.reset_default_graph()
 
-
     config = create_config_proto()
 
     # Horovod: initialize Horovod.
@@ -164,8 +162,9 @@ def main(_):
         print ('*'*60)
         print (FLAGS.flag_values_dict())
         print ('*'*60)
-    # TODO: Argument parser
-    Num_iter= FLAGS.iteration #int(sys.argv[1])
+
+    
+    Num_iter= FLAGS.iteration 
 
     print("Total Number of workers",hvd.size())
     print("Rank is:", hvd.rank())
@@ -178,7 +177,7 @@ def main(_):
     dirmake = os.path.join(FLAGS.model_data,dirname)
 
     #logdir = os.pathjoin(dirmake,("LOG" + str(hvd.size())+ "/"))
-    if MPI.COMM_WORLD.Get_rank() == 0:
+    if hvd.rank() == 0:
         if not os.path.exists(dirmake):
             os.makedirs(dirmake)        
    
@@ -196,11 +195,9 @@ def main(_):
     
     x_test = np.reshape(x_test, (-1, 784)) / 255.0
     
-    #y_train = tf.one_hot(tf.cast(y_train, tf.int32), 10, 1, 0)
+    print ('Number of Samples: {}'.format(y_train.shape))
     
-    print (y_train.shape)
     # Build model...
-    #with tf.name_scope('input'):
     image = tf.placeholder(tf.float32, [None, 784])
     label = tf.placeholder(tf.int32, [None])
     
@@ -221,19 +218,23 @@ def main(_):
             model = BNN_FC_model_nonFlip(feature_shape,K)
 
         logits = model(image)
+        
         # %% Loss
         # Convert the target to a one-hot tensor of shape (batch_size, 10) and
         # with a on-value of 1 for each one-hot vector of length 10.
+        labels_distribution = tfd.Categorical(logits=logits,name='label_dist')
         
-        neg_log_likelihood = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels=tf.one_hot(tf.cast(label, tf.int32), 10, 1, 0), logits=logits))
+        
+        # Compute the -ELBO as the loss, averaged over the batch size.
+        neg_log_likelihood = -tf.reduce_mean(input_tensor=labels_distribution.log_prob(label))
+        
         N = x_train.shape[0]
         kl = sum(model.losses) / N
         
         KLscale=1.0
         Loss_ = neg_log_likelihood + KLscale * kl
         
-        #%%
-        #predict, loss = conv_model(image, label, tf.estimator.ModeKeys.TRAIN)
+                
         predictions = tf.argmax(input=logits, axis=1)
         
         train_accuracy, train_accuracy_update_op = tf.metrics.accuracy(labels=label, predictions=predictions)
@@ -313,33 +314,39 @@ def main(_):
     checkpoint_dir = os.path.join(dirmake,'checkpoints') if hvd.rank() == 0 else None
     training_batch_generator = train_input_generator(x_train,y_train, batch_size=FLAGS.batch_size)
     
+    if hvd.rank() == 0:
+        Results_file =  os.path.join(dirmake,'Timing_results_'+str(hvd.size())+'.txt')
+        
+        if os.path.exists(Results_file):
+            # append the file
+            f = open(Results_file,"a")
+        else:
+            f = open(Results_file,"w",1)
+    
     ## Creating some variable for runtime writing
     net = Dummy()
     net.plot = Dummy()
-    net.Totalruntimeworker = []
-    net.plot.RuntimeworkerIter = []
+    net.plot.Totalruntimeworker = []
     net.plot.Loss= []
     net.plot.Accuracy= []
     net.plot.Iter_num= []
 
     if hvd.rank() == 0 :
-        with open( dirmake + "/training.log", 'w') as _out:
-            total_parameters = 0
-            for variable in tf.trainable_variables():
-                this_variable_parameters = np.prod([s for s in variable.shape])
-                total_parameters += this_variable_parameters
-                _out.write("{} has shape {} and {} total paramters to train.\n".format(
-                    variable.name,
-                    variable.shape,
-                    this_variable_parameters
-                ))
-                _out.write( "Total trainable parameters for this network: {} \n".format(total_parameters))
-            
+        if FLAGS.verbose:
+            with open( dirmake + "/training.log", 'w') as _out:
+                total_parameters = 0
+                for variable in tf.trainable_variables():
+                    this_variable_parameters = np.prod([s for s in variable.shape])
+                    total_parameters += this_variable_parameters
+                    _out.write("{} has shape {} and {} total paramters to train.\n".format(
+                        variable.name,
+                        variable.shape,
+                        this_variable_parameters
+                    ))
+                    _out.write( "Total trainable parameters for this network: {} \n".format(total_parameters))
+                
    
-    ###### Save Model #####
-    # tf.keras.models.save_model(model,os.path.join(dirmake,'BNN_MNist.h5'))
-
-
+    
     # The MonitoredTrainingSession takes care of session initialization,
     # restoring from a checkpoint, saving to a checkpoint, and closing when done
     # or an error occurs.
@@ -350,62 +357,61 @@ def main(_):
         start_Train_time = time.time()
         iter_num = 0
 
-        # Allow the full trace to be stored at run time.
-        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-        # Create a fresh metadata object:
-        run_metadata = tf.RunMetadata()
-        
+        # Uncomment to see model Parameters & Graph
+        if FLAGS.verbose:
+            if hvd.rank() == 0:
+                print(model.summary(),flush=True)
         
         while not mon_sess.should_stop():
             # Run a training step synchronously.
-            start_batch_time = time.time()
     
             image_, label_ = next(training_batch_generator)
 
-            _, Acc_,Up_opt,loss_,LOGITS= mon_sess.run([train_op,train_accuracy,train_accuracy_update_op,Loss_,logits],feed_dict={image: image_, label: label_},options=run_options, run_metadata=run_metadata)
+            start_batch_time = time.time()
+    
+            _, Acc_,Up_opt,loss_= mon_sess.run([train_op,train_accuracy,
+                                                        train_accuracy_update_op,Loss_],
+                                                        feed_dict={image: image_, label: label_})
             
+            end_batch_time = time.time()
+
+            net.plot.Loss.append(loss_)
+            net.plot.Accuracy.append(Acc_)
+            net.plot.Iter_num.append(iter_num)
+
             iter_num = iter_num + 1
 
-            end_time = time.time()
-    
-            diff_time = end_time - start_batch_time
+            diff_time = end_batch_time - start_batch_time
+            samp_sec = ( hvd.size()* float(FLAGS.batch_size)/diff_time )
 
-            if hvd.rank() == 0 and iter_num == 1:
-                tf.profiler.profile(mon_sess.graph,options=tf.profiler.ProfileOptionBuilder.float_operation())
-                parameters = tf.profiler.profile(mon_sess.graph,options=tf.profiler.ProfileOptionBuilder.trainable_variables_parameter())
-                print ('total parameters: {}'.format(parameters.total_parameters))
+           
 
-                               
-                # This saves the timeline to a chrome trace format:
-                fetched_timeline = timeline.Timeline(run_metadata.step_stats)
-                chrome_trace = fetched_timeline.generate_chrome_trace_format()
-                with open(dirmake + '/timeline_{}.json'.format(iter_num), 'w') as f:
-                    f.write(chrome_trace)
+            if hvd.rank() == 0:
+                f.write("{},{},{},{},{} \n".format(iter_num,diff_time,samp_sec,start_batch_time, end_batch_time ) )
+                f.flush()
+
+                if iter_num % 10 == 0 and (not mon_sess.should_stop()) == True:
+                    print("Iter:{},Acc:{},Loss:{} \n".format(iter_num,Acc_,loss_) )
+            
                
-
-            if hvd.rank() == 0 and iter_num % 100 == 0:            
-                # First worker do the job
-                print ("Rank-0 iter_num {} Batch RunTime: {:.3f} Acc: {:0.3f} Loss: {:0.3f} ".format(iter_num,diff_time,Acc_,loss_,))
-
+                    
         # Train Time End
+        if hvd.rank() == 0:
+            f.close()
+
         end_Train_time = time.time()
-        diff_trainSess = end_Train_time-start_Train_time
+        diff_trainSess = end_Train_time - start_Train_time
 
-
-        # model.save(os.path.join(dirmake,'BNN_MNist.h5'))
-        # net.Totalruntimeworker.append(diff_trainSess)
+        net.plot.Totalruntimeworker.append(diff_trainSess)
         
-        # # Each Rank dumps results for Training Time  
-        # with open(dirmake + "TotalRunTime" + str(hvd.rank()), "wb") as out:
-        #     pickle.dump(net.Totalruntimeworker, out)
     
 
         # # Each Rank dumps results for Accu         
-        # with open(dirmake + "PlotRunTimeIteration" + str(hvd.rank()), "wb") as out:
-        #     pickle.dump([net.plot.RuntimeworkerIter,
-        #                 net.plot.Loss,
-        #                 net.plot.Accuracy,
-        #                 net.plot.Iter_num], out)
+        with open( os.path.join(dirmake , ("PlotRunData_Rank_" + str(hvd.rank())) ), "wb") as out:
+            pickle.dump([net.plot.Totalruntimeworker,
+                        net.plot.Loss,
+                        net.plot.Accuracy,
+                        net.plot.Iter_num], out)
 
 if __name__ == "__main__":
     tf.app.run()

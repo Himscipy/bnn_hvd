@@ -33,8 +33,6 @@ tf.logging.set_verbosity(tf.logging.INFO)
 
 tfd = tfp.distributions
 
-#tf.enable_eager_execution()
-#tf.compat.v1.disable_eager_execution()
 
 def Graph_Info_Writer(dirmake):
 
@@ -94,14 +92,6 @@ def BNN_conv_model(feature_shape, Num_class):
         (tfp_layers.Convolution2DFlipout(filters=32,kernel_size=[5, 5],activation=tf.nn.relu,padding="SAME",name="Conv_1")),   
         (tf.keras.layers.MaxPooling2D(pool_size=[2,2],strides=[2,2],padding="SAME",name="Max_1")),    
         (tfp_layers.Convolution2DFlipout(256,kernel_size=[5,5],activation=tf.nn.relu,name="Conv_2")),
-        # (tf.keras.layers.MaxPooling2D(pool_size=[2, 2],strides=[2, 2],padding='SAME',name="Max_2")),
-        # (tfp_layers.Convolution2DFlipout(64,kernel_size=[5,5],activation=tf.nn.relu,name="Conv_3")),
-        # (tf.keras.layers.MaxPooling2D(pool_size=[2, 2],strides=[2, 2],padding='SAME',name="Max_3")),
-        # (tfp_layers.Convolution2DFlipout(64,kernel_size=[5,5],activation=tf.nn.relu,padding="SAME",name="Conv_4")),
-        # (tf.keras.layers.MaxPooling2D(pool_size=[2, 2],strides=[2, 2],padding='SAME',name="Max_4")),
-        # (tfp_layers.Convolution2DFlipout(64,kernel_size=[5,5],activation=tf.nn.relu,padding="SAME",name="Conv_5")),
-        # (tf.keras.layers.MaxPooling2D(pool_size=[2, 2],strides=[2, 2],padding='SAME',name="Max_5")),
-        # (tfp_layers.Convolution2DFlipout(64,kernel_size=[5,5],activation=tf.nn.relu,padding="SAME",name="Conv_6")),             
         (tf.keras.layers.Flatten()),
         # Bayesian Dense
         (tfp.layers.DenseFlipout(Num_class))
