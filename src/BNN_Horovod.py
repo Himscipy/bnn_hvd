@@ -271,7 +271,7 @@ def main(_):
     
     train_accuracy, train_accuracy_update_op = tf.metrics.accuracy(labels=label, predictions=predictions)
     # Horovod: adjust learning rate based on number of GPUs.
-    opt = tf.train.RMSPropOptimizer(0.001 * hvd.size())
+    opt = tf.train.AdamOptimizer(0.001 * hvd.size())
 
     # Horovod: add Horovod Distributed Optimizer.
     opt = hvd.DistributedOptimizer(opt)

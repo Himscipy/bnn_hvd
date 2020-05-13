@@ -18,10 +18,10 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
   + DATA/mnist.npz
 
 - **How to run the code :**
-   - Local Running:  
+   - On the local machine Running:  
         + `horovodrun -n 2 -H localhost:2 python CNN_BNN_Model.py --flagfile=config_file.cfg`
 
-    - ALCF high performance Computing Cluster (Theta) Running:  
+   - ALCF high performance Computing Cluster (Theta) Running:  
          
         ```
         PPN=1 # 32,16,8 MPIRank Per Node (Process Per Node)
@@ -31,6 +31,13 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
             -e OMP_NUM_THREADS=${NUM_THDS} -b python <path to the code>/CNN_BNN_Model.py \
             --flagfile=config_file.cfg
         ```
+    - Running the job with Balsam (Theta):
+        
+       
+
+- **Example Results**:
+    - 
+
 
 - **Model config:**
   + For other information, please check 'python CNN_BNN_Model.py --help'

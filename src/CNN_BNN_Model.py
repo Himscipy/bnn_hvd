@@ -16,6 +16,7 @@ import pickle
 import tensorflow_probability as tfp
 import sys
 from absl import flags
+from utils import Pre_Post_Process,Model_CNN_BNN
 
 tfp_layers = tfp.layers
 
@@ -27,128 +28,28 @@ flags.DEFINE_string("data_dir",default='/home/hsharma/WORK/Project_BNN/bnn_hvd/D
                     help="Directory where data is stored (if using real data).")
 flags.DEFINE_string("model_data",default='./results/',help='Define the data directory')
 flags.DEFINE_integer("batch_size",default=64,help='Batch size')
+flags.DEFINE_integer("print_step",default=10,help='Batch size')
 flags.DEFINE_integer("iteration",default=8000,help='Iterations to train for')
-flags.DEFINE_bool('compression',default=False,help='Compression of grad to fp16')
+flags.DEFINE_bool('learning_rate',default=False,help='Compression of grad to fp16')
 flags.DEFINE_bool('verbose',default=False,help='Verbose for printing')
-flags.DEFINE_string('cnnConv',default='CNN_conv',help='CNN with Convolutional Layers')
-flags.DEFINE_string('bnnConv',default='BNN_conv_flip',help='FC and Convolutional Layers type')
+flags.DEFINE_string("model_type",default='BNN', help="Select the type of model options[BNN,CNN]")
+flags.DEFINE_string('cnnConv',default='CNN_conv',help='CNN type available choose one: [CNN_conv,CNN_FC]')
+flags.DEFINE_string('bnnConv',default='BNN_conv_flip',help='BNN types available choose one:[BNN_conv_flip,BNN_FC_flip,BNN_conv_nonflip,BNN_FC_nonflip]')
 flags.DEFINE_integer("num_intra",default=128,help='Intra Threading')
 flags.DEFINE_integer("num_inter",default=1,help='Inter threading')
 flags.DEFINE_integer("kmp_blocktime",default=0,help='KMP_BLOCKTIME setting')
 flags.DEFINE_string("kmp_affinity",default='granularity=fine,verbose,compact,1,0',help='granularity setting')
-flags.DEFINE_string("Model_type",default='BNN', help="Select the type of model options(BNN,CNN)")
 
 
 FLAGS = flags.FLAGS  
-
-def create_config_proto():
-   '''HS: TF config setup'''
-   config = tf.ConfigProto()
-   config.intra_op_parallelism_threads = FLAGS.num_intra
-   config.inter_op_parallelism_threads = FLAGS.num_inter
-   config.allow_soft_placement         = True
-   os.environ['KMP_BLOCKTIME'] = str(FLAGS.kmp_blocktime)
-   os.environ['KMP_AFFINITY'] = FLAGS.kmp_affinity
-   return config
-
-
-
-def BNN_conv_model(feature_shape, Num_class):
-    """1-layer convolutionflipout model  and 
-    last layer as dense
-    """
-    
-#   Define the Model structure 
-    model = tf.keras.Sequential([
-        (tf.keras.layers.Reshape(feature_shape)),
-        (tfp_layers.Convolution2DFlipout(64,kernel_size=[5,5],activation=tf.nn.relu,padding='SAME',input_shape=feature_shape)), 
-        (tf.keras.layers.MaxPooling2D(pool_size=[2, 2],strides=[2, 2],padding='SAME')),
-        (tf.keras.layers.Flatten()),
-        (tf.keras.layers.Dense(Num_class))])
-    return model
-
-
-def BNN_FC_model(feature_shape, Num_class):
-    """1-layer Denseflipout model and 
-    last layer as simpledense 
-    """
-#   Define the Model structure 
-    model = tf.keras.Sequential([
-        (tfp_layers.DenseFlipout(64,activation=tf.nn.relu,input_shape=(28*28,))),
-        (tf.keras.layers.Dense(Num_class))])
-    return model
-
-def BNN_conv_model_nonFlip(feature_shape, Num_class):
-    """1-layer convolutionflipout model  and 
-    last layer as dense
-    """
-    
-#   Define the Model structure 
-    model = tf.keras.Sequential([
-        (tf.keras.layers.Reshape(feature_shape)),
-        (tfp_layers.Convolution2DReparameterization(64,kernel_size=[5,5],activation=tf.nn.relu,padding='SAME')), 
-        (tf.keras.layers.MaxPooling2D(pool_size=[2, 2],strides=[2, 2],padding='SAME')),
-        (tf.keras.layers.Flatten()),
-        (tf.keras.layers.Dense(Num_class))])
-    return model
-
-
-def BNN_FC_model_nonFlip(feature_shape, Num_class):
-    """1-layer Denseflipout model and 
-    last layer as simpledense 
-    """
-#   Define the Model structure 
-    model = tf.keras.Sequential([
-        (tfp_layers.DenseReparameterization(64,activation=tf.nn.relu,input_shape=(28*28,))),
-        (tf.keras.layers.Dense(Num_class))])
-    return model
-
-
-
-def CNN_conv_model(feature_shape, Num_class):
-    """1-layer convolution model with  and 
-    last layer as simple dense
-    """
-#   Define the Model structure 
-    model = tf.keras.Sequential([
-        (tf.keras.layers.Reshape(feature_shape)),
-        (tf.keras.layers.Conv2D(filters=64,kernel_size=[5, 5],
-                                activation=tf.nn.relu,
-                                padding="SAME",
-                                )),   
-        (tf.keras.layers.MaxPooling2D(pool_size=[2,2],strides=[2,2],padding="SAME")),    
-        (tf.keras.layers.Flatten()),
-        (tf.keras.layers.Dense(Num_class))])
-    return model
-
-def CNN_FC_model(feature_shape, Num_class):
-    """2-layer convolution model with second last and 
-    last layer as Bayesian 
-    """
-#   Define the Model structure 
-    model = tf.keras.Sequential([
-        (tf.keras.layers.Dense(64,activation=tf.nn.relu,input_shape=(28*28,))),
-        (tf.keras.layers.Dense(Num_class))])
-    return model
-
-
-
-def train_input_generator(x_train, y_train, batch_size=64):
-    assert len(x_train) == len(y_train)
-    while True:
-        p = np.random.permutation(len(x_train))
-        x_train, y_train = x_train[p], y_train[p]
-        index = 0
-        while index <= len(x_train) - batch_size:
-            yield x_train[index:index + batch_size], \
-                  y_train[index:index + batch_size],
-            index += batch_size
 
 
 def main(_):
     tf.reset_default_graph()
 
-    config = create_config_proto()
+    PrePostObj = Pre_Post_Process(FLAGS)
+    
+    config = PrePostObj.create_config_proto()
 
     # Horovod: initialize Horovod.
     hvd.init()
@@ -160,19 +61,18 @@ def main(_):
 
     if hvd.rank() == 0:
         print ('*'*60)
-        print (FLAGS.flag_values_dict())
+        print ("Parsed Flags..!\n",FLAGS.flag_values_dict())
         print ('*'*60)
 
     
     Num_iter= FLAGS.iteration 
 
     print("Total Number of workers",hvd.size())
-    print("Rank is:", hvd.rank())
     
-    if FLAGS.Model_type == 'CNN':
-        dirname = "Result"+"_"+str(FLAGS.Model_type)+"_ConvFlag_"+str(FLAGS.cnnConv)
+    if FLAGS.model_type == 'CNN':
+        dirname = "Result"+"_"+str(FLAGS.model_type)+"_ConvFlag_"+str(FLAGS.cnnConv)
     else:
-        dirname = "Result"+"_"+str(FLAGS.Model_type)+"_ConvFlag_"+str(FLAGS.bnnConv)
+        dirname = "Result"+"_"+str(FLAGS.model_type)+"_ConvFlag_"+str(FLAGS.bnnConv)
 
     dirmake = os.path.join(FLAGS.model_data,dirname)
 
@@ -206,16 +106,18 @@ def main(_):
     K = 10 # number of classes
     feature_shape = [28,28,1]
 
-    if FLAGS.Model_type == 'BNN':
+    ModelObj = Model_CNN_BNN(feature_shape,K)
+    
+    if FLAGS.model_type == 'BNN':
         
         if FLAGS.bnnConv == 'BNN_conv_flip':
-            model = BNN_conv_model(feature_shape,K)
+            model = ModelObj.BNN_conv_model()
         elif FLAGS.bnnConv == 'BNN_FC_flip':
-            model = BNN_FC_model(feature_shape,K)
+            model = ModelObj.BNN_FC_model()
         elif FLAGS.bnnConv == 'BNN_conv_nonflip':
-            model = BNN_conv_model_nonFlip(feature_shape,K)
+            model = ModelObj.BNN_conv_model_nonFlip()
         elif FLAGS.bnnConv == 'BNN_FC_nonflip':
-            model = BNN_FC_model_nonFlip(feature_shape,K)
+            model = ModelObj.BNN_FC_model_nonFlip()
 
         logits = model(image)
         
@@ -239,23 +141,19 @@ def main(_):
         
         train_accuracy, train_accuracy_update_op = tf.metrics.accuracy(labels=label, predictions=predictions)
         # Horovod: adjust learning rate based on number of GPUs.
-        opt = tf.train.RMSPropOptimizer(0.001 * hvd.size())
+        opt = tf.train.AdamOptimizer(0.001 * hvd.size())
 
-        if FLAGS.compression:
-            # Horovod: add Horovod Distributed Optimizer.
-            opt = hvd.DistributedOptimizer(opt,compression=hvd.Compression.fp16)
-        else:
-            # Horovod: add Horovod Distributed Optimizer.
-            opt = hvd.DistributedOptimizer(opt)
+
+        opt = hvd.DistributedOptimizer(opt)
             
         global_step = tf.train.get_or_create_global_step()
         train_op = opt.minimize(Loss_, global_step=global_step)
 
-    elif FLAGS.Model_type == 'CNN':
+    elif FLAGS.model_type == 'CNN':
         if FLAGS.cnnConv == 'CNN_conv':
-            model = CNN_conv_model(feature_shape,K)
+            model = ModelObj.CNN_conv_model()
         elif FLAGS.cnnConv ==  'CNN_FC':
-            model = CNN_FC_model(feature_shape,K)
+            model = ModelObj.CNN_FC_model()
         
         logits = model(image)
     
@@ -272,15 +170,10 @@ def main(_):
         
         train_accuracy, train_accuracy_update_op = tf.metrics.accuracy(labels=label, predictions=predictions)
         # Horovod: adjust learning rate based on number of GPUs.
-        opt = tf.train.RMSPropOptimizer(0.001 * hvd.size())
+        opt = tf.train.AdamOptimizer(FLAGS.learning_rate * hvd.size())
 
-
-        if FLAGS.compression:
-            # Horovod: add Horovod Distributed Optimizer.
-            opt = hvd.DistributedOptimizer(opt,compression=hvd.Compression.fp16)
-        else:
-            # Horovod: add Horovod Distributed Optimizer.
-            opt = hvd.DistributedOptimizer(opt)
+        # Horovod: add Horovod Distributed Optimizer.
+        opt = hvd.DistributedOptimizer(opt)
 
         # Horovod: add Horovod Distributed Optimizer.
         # opt = hvd.DistributedOptimizer(opt)
@@ -312,7 +205,7 @@ def main(_):
     # Horovod: save checkpoints only on worker 0 to prevent other workers from
     # corrupting them.
     checkpoint_dir = os.path.join(dirmake,'checkpoints') if hvd.rank() == 0 else None
-    training_batch_generator = train_input_generator(x_train,y_train, batch_size=FLAGS.batch_size)
+    training_batch_generator = PrePostObj.train_input_generator(x_train,y_train, batch_size=FLAGS.batch_size)
     
     if hvd.rank() == 0:
         Results_file =  os.path.join(dirmake,'Timing_results_'+str(hvd.size())+'.txt')
@@ -333,7 +226,7 @@ def main(_):
 
     if hvd.rank() == 0 :
         if FLAGS.verbose:
-            with open( dirmake + "/training.log", 'w') as _out:
+            with open( os.path.join( dirmake, "training.log"), 'w') as _out:
                 total_parameters = 0
                 for variable in tf.trainable_variables():
                     this_variable_parameters = np.prod([s for s in variable.shape])
@@ -390,7 +283,7 @@ def main(_):
                 f.write("{},{},{},{},{} \n".format(iter_num,diff_time,samp_sec,start_batch_time, end_batch_time ) )
                 f.flush()
 
-                if iter_num % 10 == 0 and (not mon_sess.should_stop()) == True:
+                if iter_num % FLAGS.print_step == 0 and (not mon_sess.should_stop()) == True:
                     print("Iter:{},Acc:{},Loss:{} \n".format(iter_num,Acc_,loss_) )
             
                
@@ -404,8 +297,6 @@ def main(_):
 
         net.plot.Totalruntimeworker.append(diff_trainSess)
         
-    
-
         # # Each Rank dumps results for Accu         
         with open( os.path.join(dirmake , ("PlotRunData_Rank_" + str(hvd.rank())) ), "wb") as out:
             pickle.dump([net.plot.Totalruntimeworker,

@@ -22,7 +22,7 @@ src/results/*
 *.cobaltlog
 core
 *.sc
-*.sh
+
 
 
 # Byte-compiled / optimized / DLL files
