@@ -27,11 +27,13 @@ tfd = tfp.distributions
 flags.DEFINE_string("data_dir",default='/home/hsharma/WORK/Project_BNN/bnn_hvd/DATA/mnist.npz',
                     help="Directory where data is stored (if using real data).")
 flags.DEFINE_string("model_data",default='./results/',help='Define the data directory')
-flags.DEFINE_integer("batch_size",default=64,help='Batch size')
-flags.DEFINE_integer("print_step",default=10,help='Batch size')
+flags.DEFINE_integer("batch_size",default=64,help='Set the Batch size')
+flags.DEFINE_integer("print_step",default=10,help='Printing iterations')
 flags.DEFINE_integer("iteration",default=8000,help='Iterations to train for')
-flags.DEFINE_bool('learning_rate',default=False,help='Compression of grad to fp16')
-flags.DEFINE_bool('verbose',default=False,help='Verbose for printing')
+flags.DEFINE_integer("epochs",default=10,help='Epochs to train the model')
+flags.DEFINE_bool('UseEpoch',default=True,help='Verbose for printing details about model')
+flags.DEFINE_float('learning_rate',default=0.001,help='Learning rate for the optimizer')
+flags.DEFINE_bool('verbose',default=False,help='Verbose for printing details about model')
 flags.DEFINE_string("model_type",default='BNN', help="Select the type of model options[BNN,CNN]")
 flags.DEFINE_string('cnnConv',default='CNN_conv',help='CNN type available choose one: [CNN_conv,CNN_FC]')
 flags.DEFINE_string('bnnConv',default='BNN_conv_flip',help='BNN types available choose one:[BNN_conv_flip,BNN_FC_flip,BNN_conv_nonflip,BNN_FC_nonflip]')
@@ -64,9 +66,8 @@ def main(_):
         print ("Parsed Flags..!\n",FLAGS.flag_values_dict())
         print ('*'*60)
 
+       
     
-    Num_iter= FLAGS.iteration 
-
     print("Total Number of workers",hvd.size())
     
     if FLAGS.model_type == 'CNN':
@@ -76,7 +77,6 @@ def main(_):
 
     dirmake = os.path.join(FLAGS.model_data,dirname)
 
-    #logdir = os.pathjoin(dirmake,("LOG" + str(hvd.size())+ "/"))
     if hvd.rank() == 0:
         if not os.path.exists(dirmake):
             os.makedirs(dirmake)        
@@ -101,7 +101,12 @@ def main(_):
     image = tf.placeholder(tf.float32, [None, 784])
     label = tf.placeholder(tf.int32, [None])
     
-    print(tf.shape(label))
+    N = x_train.shape[0]
+
+    if FLAGS.UseEpoch:
+        Num_iter = int(round(FLAGS.epochs * ( N / FLAGS.batch_size )))
+    else:
+        Num_iter = FLAGS.iterations
 
     K = 10 # number of classes
     feature_shape = [28,28,1]
@@ -130,7 +135,6 @@ def main(_):
         # Compute the -ELBO as the loss, averaged over the batch size.
         neg_log_likelihood = -tf.reduce_mean(input_tensor=labels_distribution.log_prob(label))
         
-        N = x_train.shape[0]
         kl = sum(model.losses) / N
         
         KLscale=1.0
@@ -164,19 +168,17 @@ def main(_):
         
         Loss_ = neg_log_likelihood 
 
-        #%%
-        #predict, loss = conv_model(image, label, tf.estimator.ModeKeys.TRAIN)
         predictions = tf.argmax(input=logits, axis=1)
         
         train_accuracy, train_accuracy_update_op = tf.metrics.accuracy(labels=label, predictions=predictions)
+
+
         # Horovod: adjust learning rate based on number of GPUs.
         opt = tf.train.AdamOptimizer(FLAGS.learning_rate * hvd.size())
 
         # Horovod: add Horovod Distributed Optimizer.
         opt = hvd.DistributedOptimizer(opt)
 
-        # Horovod: add Horovod Distributed Optimizer.
-        # opt = hvd.DistributedOptimizer(opt)
 
         global_step = tf.train.get_or_create_global_step()
         train_op = opt.minimize(Loss_, global_step=global_step)
@@ -226,17 +228,8 @@ def main(_):
 
     if hvd.rank() == 0 :
         if FLAGS.verbose:
-            with open( os.path.join( dirmake, "training.log"), 'w') as _out:
-                total_parameters = 0
-                for variable in tf.trainable_variables():
-                    this_variable_parameters = np.prod([s for s in variable.shape])
-                    total_parameters += this_variable_parameters
-                    _out.write("{} has shape {} and {} total paramters to train.\n".format(
-                        variable.name,
-                        variable.shape,
-                        this_variable_parameters
-                    ))
-                    _out.write( "Total trainable parameters for this network: {} \n".format(total_parameters))
+            PrePostObj.Write_TrainingLog(dirmake)
+            
                 
    
     

@@ -45,13 +45,25 @@ class Pre_Post_Process:
                     y_train[index:index + batch_size],
                 index += batch_size
 
+    def Write_TrainingLog(self,dirmake):
+        with open( os.path.join( dirmake, "training.log"), 'w') as _out:
+                total_parameters = 0
+                for variable in tf.trainable_variables():
+                    this_variable_parameters = np.prod([s for s in variable.shape])
+                    total_parameters += this_variable_parameters
+                    _out.write("{} has shape {} and {} total paramters to train.\n".format(
+                        variable.name,
+                        variable.shape,
+                        this_variable_parameters
+                    ))
+                    _out.write( "Total trainable parameters for this network: {} \n".format(total_parameters))
 
 
 class Model_CNN_BNN:
     def __init__(self,feature_shape,Num_class):
         super().__init__()
-        self.featute_shape = feature_shape
-        self.self.Num_class = Num_class
+        self.feature_shape = feature_shape
+        self.Num_class = Num_class
 
     def BNN_conv_model(self):
         """1-layer convolutionflipout model  and 
