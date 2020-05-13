@@ -2,7 +2,7 @@
 
 Big_data/*
 cifar-10-batches-py/*
-*.npz
+
 vtune*/
 .vscode/
 /checkpoints/
@@ -10,7 +10,7 @@ vtune*/
 
 /MNIST_data/*
 
-/results/*
+src/results/*
 
 /figs/*
 /slides/*
