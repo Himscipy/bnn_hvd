@@ -120,12 +120,18 @@ class Dataset(object):
 
     def load_h5(self, filepath=None):
         if filepath is None:
-            filepath = self.data_path +'SNR_interval_0.h5'
+            # The test_dataPath is set here since the original data is
+            # not availabel.
+            filepath = self.test_dataPath +'SNR_interval_TestData_.h5'
+            # filepath = self.test_dataPath +'SNR_interval_0.h5'
             
         self.h5_file = h5py.File(filepath, 'r')
         self.h5_keys = self.h5_file.keys()
-        self.train_data_ready = self.h5_file[u'train_data']
-        self.train_label_ready = self.h5_file[u'train_label']
+        self.train_data_ready = self.h5_file[u'test_data']
+        self.train_label_ready = self.h5_file[u'test_label']
+     
+        # self.train_data_ready = self.h5_file[u'train_data']
+        # self.train_label_ready = self.h5_file[u'train_label']
      
 
             
@@ -163,36 +169,36 @@ class Dataset(object):
         
     def train_batch(self, global_index, index, batch_size):
         #EJ use global index in the case of re-starts. 
-        if (global_index+1) > 9000 and (global_index+1) <= 18000:
-            # if hvd.rank() == 0:
+        if (global_index+1) > 9000 :
+            # if hvd.rank() == 0:and (global_index+1) <= 18000
             #     print("Reading data: SNR_interval_1.h5")
+            self.test_dataPath +'SNR_interval_TestData_.h5'
+            self.load_h5(filepath=self.trai + "SNR_interval_1.h5")
+        # if (global_index+1) > 18000 and (global_index+1) <= 27000:
+        #     # if hvd.rank() == 0:
+        #     #     print("Reading data: SNR_interval_2.h5")
+            
+        #     self.load_h5(filepath=self.data_path+"SNR_interval_2.h5")
+        # if (global_index+1) > 27000 and (global_index+1) <= 36000:
+        #     # if hvd.rank() == 0:
+        #     #     print("Reading data: SNR_interval_3.h5")
 
-            self.load_h5(filepath=self.data_path+"SNR_interval_1.h5")
-        if (global_index+1) > 18000 and (global_index+1) <= 27000:
-            # if hvd.rank() == 0:
-            #     print("Reading data: SNR_interval_2.h5")
+        #     self.load_h5(filepath=self.data_path+"SNR_interval_3.h5")
+        # if (global_index+1) > 36000 and (global_index+1) <= 48000:
+        #     # if hvd.rank() == 0:
+        #     #     print("Reading data: SNR_interval_4.h5")
             
-            self.load_h5(filepath=self.data_path+"SNR_interval_2.h5")
-        if (global_index+1) > 27000 and (global_index+1) <= 36000:
-            # if hvd.rank() == 0:
-            #     print("Reading data: SNR_interval_3.h5")
-
-            self.load_h5(filepath=self.data_path+"SNR_interval_3.h5")
-        if (global_index+1) > 36000 and (global_index+1) <= 48000:
-            # if hvd.rank() == 0:
-            #     print("Reading data: SNR_interval_4.h5")
+        #     self.load_h5(filepath=self.data_path+"SNR_interval_4.h5")
+        # if (global_index+1) > 48000 and (global_index+1) <= 60000:
+        #     # if hvd.rank() == 0:
+        #     #     print("Reading data: SNR_interval_5.h5")
             
-            self.load_h5(filepath=self.data_path+"SNR_interval_4.h5")
-        if (global_index+1) > 48000 and (global_index+1) <= 60000:
-            # if hvd.rank() == 0:
-            #     print("Reading data: SNR_interval_5.h5")
+        #     self.load_h5(filepath=self.data_path+"SNR_interval_5.h5")
+        # if (global_index+1) > 60000:
+        #     # if hvd.rank() == 0:
+        #     #     print("Reading data: SNR_interval_6.h5")
             
-            self.load_h5(filepath=self.data_path+"SNR_interval_5.h5")
-        if (global_index+1) > 60000:
-            # if hvd.rank() == 0:
-            #     print("Reading data: SNR_interval_6.h5")
-            
-            self.load_h5(filepath=self.data_path+"SNR_interval_6.h5")
+        #     self.load_h5(filepath=self.data_path+"SNR_interval_6.h5")
             
         train_x, train_y = self.get_batch(index, batch_size)
         return (train_x, train_y)
