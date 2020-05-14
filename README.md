@@ -1,6 +1,6 @@
 # Bayesian Neural Network (BNN) Distributed Training
 
-![](misc/Repo_Logo.png)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 The repo consist codes for preforming distributed training of Bayesian Neural Network models at scale using 
 High Performance Computing Cluster such as ALCF (Theta). The main purpose of the code is to act as a tutorial for getting 
@@ -25,8 +25,8 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
   + Bayesian Neural Network with Non-Flipout Fully Connected Layer.('BNN_conv_nonflip')
   + Bayesian Neural Network with Flipout Convolutional Layers.('BNN_FC_flip')
   + Bayesian Neural Network with Non-Flipout Convolutional Layers.('BNN_FC_nonflip)
-  + Convolutional Neural Network (CNN_Conv)
-  + Fully Connected Neural Network (CNN_FC)
+  + Convolutional Neural Network ('CNN_Conv')
+  + Fully Connected Neural Network ('CNN_FC')
 
 ## **Files included:**  
   + src/CNN_BNN_Model.py
@@ -41,7 +41,7 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
    - On the local machine Running:  
         + `horovodrun -n 2 -H localhost:2 python CNN_BNN_Model.py --flagfile=config_file.cfg`
 
-   - ALCF high performance Computing Cluster (Theta)Running: 
+   - ALCF high performance Computing Cluster (Theta) Running: 
    ![](misc/Theta1600x900.jpg) 
          
         ```
