@@ -1,8 +1,13 @@
-# Data Distributed Training of Bayesian Neural Network (BNN)
+# Bayesian Neural Network (BNN) Distributed Training
 
 The repo consist codes for preforming distributed training of Bayesian Neural Network models at scale using 
-High Performance Computing Cluster such as ALCF (Theta). 
-The main purpose of the code is to analyze the distibuted training performance of BNN's on High Performace Computing clusters. 
+High Performance Computing Cluster such as ALCF (Theta). The main purpose of the code is to act as a tutorial for getting 
+started with distibuted training of BNN's on High Performace Computing clusters. In addition, a advanced model is also added 
+with the source repository. The advance model is associated with an ADSP project for estimating the the Gravitational Wave parameters 
+using combination of Neural Networks and Bayesian Neural Network Layers. The dataset is available on Theta and restricted to the mmadsp users only, 
+the code is provided for the purpose of demonstration. For furthter details about [ADSP](https://www.alcf.anl.gov/science/adsp-allocation-program) contact 
+Argonne ALCF support.
+
 The BNN models are implemented using the Tensorflow-probability libarary. The data distribted training is performed using Horovod.
 
 - **Dependencies**
@@ -11,16 +16,14 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
 
 - **Dataset:** 
     + [MNIST] hand-written digit dataset.
-    + [CIFAR-10] 
 
 - **Models:** 
     + Bayesian Neural Network with Flipout Fully Connected Layer.('BNN_conv_flip')
     + Bayesian Neural Network with Non-Flipout Fully Connected Layer.('BNN_conv_nonflip')
     + Bayesian Neural Network with Flipout Convolutional Layers.('BNN_FC_flip')
     + Bayesian Neural Network with Non-Flipout Convolutional Layers.('BNN_FC_nonflip)
-    
-    + Convolutional Neural Network 
-    + Fully Connected Neural Network 
+    + Convolutional Neural Network (CNN_Conv)
+    + Fully Connected Neural Network (CNN_FC)
 
 - **Files included:**  
   + src/CNN_BNN_Model.py
@@ -45,18 +48,26 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
         ```
     - Running the job with Balsam (Theta):
         
-       
 
-- **Example Results:**
-    - 
 
-- **Research papers related to Bayesian Neural Networks:**
+
+- **Research Articles:**
+    **Papers related to Bayesian Neural Networks:**
     + [Probabilistic Backpropagation for ScalableLearning of Bayesian Neural Networks](http://proceedings.mlr.press/v37/hernandez-lobatoc15.pdf) 
     + [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424)
     + [Practical Variational Inference for Neural Networks](https://papers.nips.cc/paper/4329-practical-variational-inference-for-neural-networks)
     + [A Comprehensive guide to Bayesian Convolutional NeuralNetwork with Variational Inference](https://arxiv.org/pdf/1901.02731.pdf)
     + [Flipout: Efficient Pseudo-Independent Weight Perturbations on Mini-Batches](https://arxiv.org/abs/1803.04386)
-  
+    
+    **Papers for Gravitational Bayesian Model:**
+     + [Deterministic and Bayesian Neural Networks for Low-latency Gravitational Wave Parameter Estimation of Binary Black Hole Mergers](https://arxiv.org/abs/1903.01998)
+
+
+- **Additional Resources**:
+    + [Tensorflow Probalbility Examples](https://github.com/tensorflow/probability/blob/master/tensorflow_probability/examples)
+
+
+
 - **Contact**
   + Himanshu Sharma (himanshu90sharma@gmail.com)
 
