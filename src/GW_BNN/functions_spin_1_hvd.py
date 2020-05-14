@@ -88,10 +88,10 @@ class Dataset(object):
             self.num_workers=hvd.size()
             self.rank=hvd.rank()
             if hvd.rank() == 0 :
-                self.make_folder()
+                self.final_save_path = self.make_folder()
         else:
             self.hvd=False
-            self.make_folder()
+            self.final_save_path = self.make_folder()
        
     def make_folder(self):
         
@@ -106,6 +106,7 @@ class Dataset(object):
                 print("Creation of the directory: %s failed" % self.final_save_path)
             else:
                 print("Successfully created the directory: %s " % self.final_save_path) 
+        return self.final_save_path
         
     
     def load_Shuffled_test_datah5(self,filepath=None):
