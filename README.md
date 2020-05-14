@@ -64,10 +64,10 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
     - The comparison of the BNN and CNN time to train with increasing number of nodes are shown in the Fig-1 shown below.
     ![](misc/Demo_Timing_PlotBNN_CNNComparison.png)
     
-    - The comparison of the Speed-Up between the BNN and CNN using the training time can be   
+    - The comparison of the Speed-Up between the BNN and CNN using the training time can be also compared in Fig-2 shown below.   
     ![](misc/Demo_SpeedUp_PlotBNN_CNNComparison.png)
 
-    - The training of the Bayesian Network is to find optimal distribution of the training parameters which done using the technique of Variational Inference(VI). As the training iteration progress the weights posterior converges. An example is shown here for the weights initialized with the Gaussian prior in Fig-2.
+    - The training of the Bayesian Network is to find optimal distribution of the training parameters which done using the technique of Variational Inference(VI). As the training iteration progress the weights posterior converges. An example is shown below with the weights initialized with the Gaussian prior in Fig-3.
     ![](misc/Repo_Weights_Updates.png)
     
     - As the model is trained the inference is performed by  
