@@ -1,5 +1,7 @@
 # Bayesian Neural Network (BNN) Distributed Training
 
+![](misc/Repo_Logo.png)
+
 The repo consist codes for preforming distributed training of Bayesian Neural Network models at scale using 
 High Performance Computing Cluster such as ALCF (Theta). The main purpose of the code is to act as a tutorial for getting 
 started with distibuted training of BNN's on High Performace Computing clusters. In addition, a advanced model is also added 
@@ -10,12 +12,13 @@ Argonne ALCF support.
 
 The BNN models are implemented using the Tensorflow-probability libarary. The data distribted training is performed using Horovod.
 
-- **Dependencies**
+- **Code Dependencies**
     + python >= 3.5
     + requirements.txt
 
 - **Dataset:** 
-    + [MNIST] hand-written digit dataset.
+    + [MNIST](http://yann.lecun.com/exdb/mnist/) hand-written digit dataset.
+
 
 - **Models:** 
     + Bayesian Neural Network with Flipout Fully Connected Layer.('BNN_conv_flip')
@@ -29,14 +32,13 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
   + src/CNN_BNN_Model.py
   + DATA/mnist.npz
 
-- **Model config:**
-  + For other information, please check 'python CNN_BNN_Model.py --help'
 
 - **How to run the code :**
    - On the local machine Running:  
         + `horovodrun -n 2 -H localhost:2 python CNN_BNN_Model.py --flagfile=config_file.cfg`
 
-   - ALCF high performance Computing Cluster (Theta) Running:  
+   - ALCF high performance Computing Cluster (Theta) Running: 
+   ![](misc/Theta1600x900.jpg) 
          
         ```
         PPN=1 # 32,16,8 MPIRank Per Node (Process Per Node)
@@ -47,8 +49,16 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
             --flagfile=config_file.cfg
         ```
     - Running the job with Balsam (Theta):
+        + Look the detail [README.md](BalsamJobCreation/Readme.md)
+    
+    + For other information about the , please check 'python CNN_BNN_Model.py --help'
+
         
 
+- **Example Results:**  
+    - The comparison of the BNN and CNN time to train with increasing number of nodes are shown in the Fig-1 shown below.
+    ![image](misc/Demo_Timing_PlotBNN_CNNComparison.png) 
+    - The training of the Bayesian Network is to find optimal distribution of the training training parameter as the  
 
 
 - **Research Articles:**
@@ -71,6 +81,9 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
 - **Contact**
   + Himanshu Sharma (himanshu90sharma@gmail.com)
 
-- **Ackowledegment**  
-This research used resources of the Argonne Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357. This research was funded in part and used resources of the Argonne Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357. This work describes objective technical results and analysis. Any subjective views or opinions that might be expressed in the work do not necessarily represent the views of the U.S. DOE or the United States Government. Declaration of Interests - None. 
+- **Ackowledegment** 
+
+    ![](misc/ANL_Logo.png) 
+
+    This research used resources of the Argonne Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357. This research was funded in part and used resources of the Argonne Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC02-06CH11357. This work describes objective technical results and analysis. Any subjective views or opinions that might be expressed in the work do not necessarily represent the views of the U.S. DOE or the United States Government. Declaration of Interests - None.
 
