@@ -12,6 +12,16 @@ Argonne ALCF support.
 
 The BNN models are implemented using the Tensorflow-probability libarary. The data distribted training is performed using Horovod.
 
+## **Brief Background on BNN:**
+
+
+```math
+SE = \frac{\sigma}{\sqrt{n}}
+```
+
+
+
+
 ## **Code Dependencies:**
  + python >= 3.5
  + requirements.txt
