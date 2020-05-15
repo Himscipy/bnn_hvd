@@ -183,57 +183,6 @@ class Dataset(object):
 
         return (train_data_batch, train_label_batch)
  
-
-
-    def get_batch(self,index,batch_size):
-        #EJ: new batch generation, data set already in memory
-        num_batches = int(self.train_data_ready.shape[0] / batch_size)
-        real_index = index % num_batches
-
-        if real_index == 0:
-            (self.train_data_shuffled, self.train_label_shuffled) = self.shuffling(real_index,self.train_data_ready, self.train_label_ready)
-
-        train_data_batch = self.train_data_shuffled[int(real_index * batch_size):int((real_index + 1) * batch_size), :]
-        train_label_batch =self.train_label_shuffled[int(real_index * batch_size):int((real_index + 1) * batch_size), :] 
-
-        return (train_data_batch, train_label_batch)
-        
-    def train_batch(self, global_index, index, batch_size):
-        #EJ use global index in the case of re-starts. 
-        if (global_index+1) > 9000 and (global_index+1) <= 18000:
-            if hvd.rank() == 0 and index == 0 :
-                print("Reading data: SNR_interval_1.h5")
-
-            self.load_h5(filepath=self.data_path+"SNR_interval_1.h5")
-        if (global_index+1) > 18000 and (global_index+1) <= 27000:
-            if hvd.rank() == 0 and index == 0:
-                print("Reading data: SNR_interval_2.h5")
-            
-            self.load_h5(filepath=self.data_path+"SNR_interval_2.h5")
-        if (global_index+1) > 27000 and (global_index+1) <= 36000:
-            if hvd.rank() == 0 and index == 0:
-                print("Reading data: SNR_interval_3.h5")
-
-            self.load_h5(filepath=self.data_path+"SNR_interval_3.h5")
-        if (global_index+1) > 36000 and (global_index+1) <= 48000:
-            if hvd.rank() == 0 and index == 0:
-                print("Reading data: SNR_interval_4.h5")
-            
-            self.load_h5(filepath=self.data_path+"SNR_interval_4.h5")
-        if (global_index+1) > 48000 and (global_index+1) <= 60000:
-            if hvd.rank() == 0 and index == 0:
-                print("Reading data: SNR_interval_5.h5")
-            
-            self.load_h5(filepath=self.data_path+"SNR_interval_5.h5")
-        if (global_index+1) > 60000:
-            if hvd.rank() == 0 and index == 0:
-                print("Reading data: SNR_interval_6.h5")
-            
-            self.load_h5(filepath=self.data_path+"SNR_interval_6.h5")
-            
-        
-        train_x, train_y = self.get_batch(index, batch_size)
-        return (train_x, train_y)
     
     def train_batch_Flag (self, flag, index, batch_size):
         if flag == 0:
@@ -582,17 +531,13 @@ class RUN_Model(object):
 
         if self.hvd:
             import horovod.tensorflow as hvd
-            from mpi4py import MPI
-            comm = MPI.COMM_WORLD
-            #rank = comm.Get_rank() 
-
             self.num_workers = hvd.size()
             self.opt = hvd.DistributedOptimizer(opt)
         else: 
            self.opt=opt
            self.num_workers = 1
-           from mpi4py import MPI
-           comm = MPI.COMM_WORLD
+           
+        
         self.train_op = self.opt.minimize(self.elbo_Loss, global_step=self.global_step)
 
 
@@ -600,7 +545,7 @@ class RUN_Model(object):
             self.bcast = hvd.BroadcastGlobalVariablesHook(0)
             self.hooks.append(hvd.BroadcastGlobalVariablesHook(0))
             num_steps_hook = tf.train.StopAtStepHook(last_step=iterations // hvd.size())
-            #self.hooks.append(saver_hook)
+        
             if hvd.rank() == 0:
                 print('Number of iterations Each Rank:{} Total iteration {}'.format(iterations // hvd.size(), iterations))
                 self.checkpoint_dir = os.path.join(dataset.final_save_path,self.train_logs)
@@ -756,67 +701,7 @@ class RUN_Model(object):
                     if (i % 100 == 0 and i > 0): self.Check_RelativeError=True # check relative error Every 100 local iteration
                 
 
-                if self.Check_RelativeError:   
-                    # if (relative_error + un)  - Fixed_relative or (relative_error - un)  - Fixed_relative == Toler
-                    # mark flag # send flag to datasetgen
-
-                    num_monte_carlo = self.Num_monte_carlo
-
-                    #Mc sampling is expensive so only do this with large num_mc when we have to i.e for testing
-                    rvs = np.asarray([self.sess.run(self.sample_distribution, feed_dict={self.input_vector: train_batch_input}) for _ in range(num_monte_carlo)])
-                    mean_mc = np.mean(rvs, axis=0,dtype=np.float32)
-                    std_mc = np.std(rvs, axis=0,dtype=np.float32)
-
-                    AvRelError=self.sess.run(self.relative_error,
-                                            feed_dict={self.mean:mean_mc,self.learning_rate: lr,
-                                                    self.output_vector: train_batch_output,
-                                                    self.input_vector: train_batch_input})
-
-                    Uncertainty_on_AvRelError=self.sess.run(self.relative_error_uncertainty,
-                                                            feed_dict={self.mean:mean_mc,
-                                                                    self.output_vector: train_batch_output,
-                                                                    self.input_vector: train_batch_input,
-                                                                    self.learning_rate: lr,
-                                                                    self.std:std_mc})
-                    
-                    print('***{},{},{},{},{},{}'.format(self.SNR_FLAG,int(i),global_step_val,AvRelError,Uncertainty_on_AvRelError,Time_to_train))
-
-
-                    Upper_bound = AvRelError #+Uncertainty_on_AvRelError
-                    #Lower_bound = AvRelError-Uncertainty_on_AvRelError
-                    Rel_target = np.array([0.09987275, 0.03561291, 0.03175599])
-                    #Rel_target = np.array([0.18673794, 0.08693607, 0.09389067])
-                    
-                    tol = self.tolerance
-                    
-                    #pred_tol = np.linalg.norm((Rel_target - AvRelError), ord=1 ) -  np.linalg.norm(Uncertainty_on_AvRelError,ord=1) 
-                    
-                    
-
-                    UP = np.linalg.norm(Upper_bound - Rel_target)
-                    #LOW = np.linalg.norm(Lower_bound - Rel_target)
-                    
-                    print ("UP {}:".format(UP))
-                    
-                    # if (  UP <= tol or  LOW <= tol):
-                    # if( abs(pred_tol) <= tol ):
-                    if (UP <= tol):
-                        print ('Global_Step_val {} Done with SNR {} RunTime {}'.format(global_step_val_index,self.SNR_FLAG,diff_time))
-                        Value_Bool = True
-                        comm.bcast(Value_Bool, root=0)
-                        print ('Exiting While Loop....')
-                        #break
-                        #self.Update_SNRFLAG =True
-                
-                #print("Rank {} Value_Bool {} ".format(hvd.rank(),Value_Bool))
-                # TODO: With MPI4PY BroadCasting
-                # if hvd.rank() >= 0:
-                #     # Check for SNR FLAG
-                #     if self.Update_SNRFLAG:
-                #         self.SNR_FLAG += 1
-                #     self.Update_SNRFLAG = False 
-
-                
+                                
                 if self.print_output:
                     loss_train, outputs = self.sess.run([self.elbo_Loss, self.outputs], 
                                                                     feed_dict={self.input_vector: train_batch_input, 
@@ -845,8 +730,6 @@ class RUN_Model(object):
 
                     
                     net.plot.global_step.append(global_step_val)
-                    net.plot.RuntimeError.append(AvRelError)
-                    net.plot.RuntimeError_Uncertain.append(Uncertainty_on_AvRelError)
                     net.plot.Loss.append(loss_train.mean())
                     
                 ###################################
@@ -869,9 +752,9 @@ class RUN_Model(object):
                                                                                 self.if_training: [False]})
                     # Generate Dataset for 1 SNR and 1 Batch
                     Test_rvs = np.asarray([self.sess.run(self.sample_distribution, feed_dict={self.input_vector: test_data_batch})
-                                for _ in range(num_monte_carlo)])
-                    Test_mean_mc = np.mean(rvs, axis=0)
-                    Test_std_mc = np.std(rvs, axis=0)
+                                for _ in range(self.Num_monte_carlo)])
+                    Test_mean_mc = np.mean(Test_rvs, axis=0)
+                    Test_std_mc = np.std(Test_rvs, axis=0)
                     
 
                     # Test data Error
