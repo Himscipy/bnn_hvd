@@ -15,11 +15,6 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
 ## **Brief Background on BNN:**
 
 
-```math
-SE = \frac{\sigma}{\sqrt{n}}
-```
-
-
 
 
 ## **Code Dependencies:**
