@@ -5,10 +5,6 @@
 #COBALT -q debug-flat-quad 
 
 
-# module load datascience/tensorflow-1.14
-# module load datascience/horovod-0.18.1
-# module load datascience/h5py-2.9.0
-# module load /projects/datascience/hsharma/bnn_hvd/src/GW_BNN/run_scripts/tensorflow-1.14-HVD
 
 module load /soft/datascience/tensorflow/tensorflow-1.14-py36-hpctw
 
