@@ -1,13 +1,12 @@
-# Balsam Job Creation Scripts
+# **Balsam Job Creation Scripts Instructions:**
 
 Balsam is a work schecduler on theta. The details about using it on theta can be found in the [documentation](https://balsam.readthedocs.io/en/latest/). The python scripts present here will help in creating and submitting BNN model jobs on Theta. 
 
 
-- Step 0 : These are intial balsam steps (skip if you already have a Balsam Env. setup)
+- **Step 0 :** These are intial balsam steps (skip if you already have a Balsam Env. setup)
   + `module load balsam`
   + `balsam init ./Tut_BalsamBNN `
   + `source balsamactivate /lus/theta-fs0/projects/datascience/hsharma/bnn_hvd/BalsamJobCreation/Tut_BalsamBNN`
-  + `balsam submit-launch -n <num_nodes> -q <queue> -t <time> -A <account> --wf-filter BNN_ThetaRun --job-mode mpi` 
 
 - **Step 1:**
     + Run `./init.sh`
@@ -30,9 +29,15 @@ Balsam is a work schecduler on theta. The details about using it on theta can be
     ``` 
     
 ## Tips for Balsam;
- + Deleting the jobs based on workflow from command line.
+ + Deleting the jobs based on workflow,application from command line.
+    
     ```
     python -c 'from balsam.launcher.dag import BalsamJob; BalsamJob.objects.filter(workflow="myWorkflow").delete()'
+    ```
+
+    ```
+    python -c 'from balsam.launcher.dag import BalsamJob; BalsamJob.objects.filter(application="ApplicationName").delete()'
+
     ``` 
 
 
