@@ -32,27 +32,14 @@ spin_scale_factor = 1.
 
 def Setup_Seed(params):
 
-    if params.hvd:
-        import horovod.tensorflow as hvd
-        hvd.init()
-        #EJ NB to set seeds here
-        seed_adjustment= hvd.rank()
-        tf.reset_default_graph()
-        np.random.seed(6118 + seed_adjustment)
-        tf.set_random_seed(1234 + seed_adjustment)
-        original_seed = 1092 + seed_adjustment
-        seed = tfd.SeedStream(original_seed, salt="random_beta")
-        #print('Seed Initialized')
-        #print("Original_seed:",original_seed,"Seed",seed())
-    else:
-        seed_adjustment= 0
-        tf.reset_default_graph()
-        np.random.seed(6118 + seed_adjustment)
-        tf.set_random_seed(1234 + seed_adjustment)
+    seed_adjustment= 0
+    tf.reset_default_graph()
+    np.random.seed(6118 + seed_adjustment)
+    tf.set_random_seed(1234 + seed_adjustment)
 
-        original_seed = 1092 + seed_adjustment
-        seed = tfd.SeedStream(original_seed, salt="random_beta")
-    
+    original_seed = 1092 + seed_adjustment
+    seed = tfd.SeedStream(original_seed, salt="random_beta")
+
     return seed
         
 

@@ -2,9 +2,8 @@ import os
 import numpy as np
 import argparse
 import time
-#from functions_spin_1 import *
 
-# from fun_spin_hvd_adaptive import *
+
 from functions_spin_distributed_hvd import *
 
 
@@ -44,13 +43,12 @@ Total_Time_Start = time.time()
 Seed_set = Setup_Seed(args)
 
 if args.hvd:
-    #print ('Initalizing HVD')
+
     import horovod.tensorflow as hvd
     hvd.init()
     if hvd.rank() == 0:
         print("args:",args)
 else:
-    #print ('HVD False')
     print ("args:",args)
     
 

@@ -1,5 +1,7 @@
 # Bayesian Neural Network (BNN) Distributed Training
 
+![](/misc/Repo_Logo.png)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 The repo consist codes for preforming distributed training of Bayesian Neural Network models at scale using 
@@ -13,17 +15,28 @@ Argonne ALCF support.
 The BNN models are implemented using the Tensorflow-probability libarary. The data distribted training is performed using Horovod.
 
 ## **Brief Background on BNN:**
+**Bayesian Neutal Networks** is one of approaches used to capture network uncertainity. The uncertainities in Bayesian modeling can be classified under two categories; 
 
+1. Aleatoric uncertainity 
+2. Epistemic uncertainity. 
+
+The Aleatoric uncertainity tries to capture noise inherent with the observations/data. The noise in data is associated with sensor measurement noise. Epistemic unceratinity is associated with model parameters, and with increasing the data the uncertainity can be reduced. The Aleoteric uncertainity is further divided into  Homoscedastic and Heteroscedastic.
+- **Homoscedastic uncertainty:** uncertainty which stays constant for different inputs, and heteroscedastic uncertainty.  
+- **Heteroscedastic uncertainty:** depends on the inputs to the model, with some inputs potentially having more noisy outputs than others. This is particuraly important to avoid model over-confident predictions. 
+
+
+The Epistemic uncertainty is modelled by putting a prior distribution over the model parameters/weights and compute how these weights varies and converges, which are done in case of Bayesian Neural Networks. While in case of Aleoteric uncertainity are modelled by putting distibutions on the output of the model.
 
 
 
 ## **Code Dependencies:**
  + python >= 3.5
- + requirements.txt
+ + [requirements.txt](requirements.txt)
 
 ## **Dataset:** 
- + [MNIST](http://yann.lecun.com/exdb/mnist/) hand-written digit dataset.
+ + [MNIST](http://yann.lecun.com/exdb/mnist/) hand-written digit dataset sample images below.
 
+     ![](misc/MNIST_DataSamples.png)
 
 ## **Models:** 
   + Bayesian Neural Network with Flipout Fully Connected Layer.('BNN_conv_flip')
@@ -78,7 +91,8 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
     - The training of the Bayesian Network is to find optimal distribution of the training parameters which done using the technique of Variational Inference(VI). As the training iteration progress the weights posterior converges. An example is shown below with the weights initialized with the Gaussian prior in Fig-3.
     ![](misc/Repo_Weights_Updates.png)
     
-    - As the model is trained the inference is performed by  
+    - As the model is trained once and the posteriors for the weights are converged. The model is used for performing inference. The inference is perfomed by running the model over and over again (Monte-Carlo iterations). The output of the model returns the prediction distribution as shown below for MC iterations of 300 and with a BNN Fully Connected model.
+    ![](misc/Repo_DemoResults_FC_layer_combine.png)
 
 
 - **Research Articles:**
