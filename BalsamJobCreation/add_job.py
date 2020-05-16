@@ -8,14 +8,14 @@ PathPythonCode = '/projects/datascience/hsharma/bnn_hvd/src/CNN_BNN_Model.py'
 Data_Dir = '/projects/datascience/hsharma/bnn_hvd/DATA/mnist.npz'
 
 
-generic_params =('{} --UseEpoch=False --epochs=10'
+generic_params =('{} --UseEpoch=False --epochs=10 '
                  '--data_dir={} --model_data=./results/{}/ --model_type=BNN '
-                 '--print_step=100 --iteration=1000 --learning_rate=0.001 --verbose=False'
+                 '--print_step=100 --iteration=500 --learning_rate=0.001 --verbose=False '
                  '--batch_size=128 --bnnConv=BNN_conv_flip --cnnConv=CNN_conv '
                  '--num_intra=128 --num_inter=1')
 
 
-Num_nodes = [1,2,4,8]
+Num_nodes = [1,2]
 
 application = APPLICATIONNAME
 workflow = APPLICATIONNAME + "_Runsof_Total_{}_jobs".format(str(len(Num_nodes)))

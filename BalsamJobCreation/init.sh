@@ -10,6 +10,11 @@ export APPLICATIONNAME="BNN_ThetaRun"
 export APPLICATIONEXEC="python"
 export BASEDIR=$(realpath $(dirname $0))
 
+var=${PWD}
+echo ${var}
+
+cp setup_org.sh setup.sh
+sed -i "s|Replace|${var}|g" setup.sh
 
 balsam app --name "${APPLICATIONNAME}" --exec ${APPLICATIONEXEC}
 

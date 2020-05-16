@@ -106,7 +106,7 @@ def main(_):
     if FLAGS.UseEpoch:
         Num_iter = int(round(FLAGS.epochs * ( N / FLAGS.batch_size )))
     else:
-        Num_iter = FLAGS.iterations
+        Num_iter = FLAGS.iteration
 
     K = 10 # number of classes
     feature_shape = [28,28,1]

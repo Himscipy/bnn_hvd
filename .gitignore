@@ -1,5 +1,10 @@
 *.json
 
+BalsamJobCreation/Tut_BalsamBNN/qsubmit/*
+BalsamJobCreation/Tut_BalsamBNN/balsamdb/*
+
+BalsamJobCreation/Tut_BalsamBNN/server-info
+
 BNN_HVD_RUN/*
 
 Big_data/*
