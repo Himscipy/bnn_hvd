@@ -57,6 +57,9 @@ The BNN models are implemented using the Tensorflow-probability libarary. The da
             -e OMP_NUM_THREADS=${NUM_THDS} -b python <path to the code>/CNN_BNN_Model.py \
             --flagfile=config_file.cfg
         ```
+
+- The submission [script](/src/RUN_ScriptBNN/run_script.sh) is provided in the repository.
+
 - Running the job with [Balsam](https://www.alcf.anl.gov/support-center/theta/balsam) (Theta):
     + Look the detail [README.md](BalsamJobCreation/Readme.md)
     
