@@ -37,22 +37,19 @@ The Epistemic uncertainty is modelled by putting a prior distribution over the m
  + [MNIST](http://yann.lecun.com/exdb/mnist/) hand-written digit dataset sample images below.
 
      ![](misc/MNIST_DataSamples.png)
+ 
+ + [CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) The CIFAR-10 dataset consists of 60000 32x32 colour images in 10 classes, with 6000 images per class. There are 50000 training images and 10000 test images.
+      ![](misc/CIFAR10_Sample.png)
+  
 
 ## **Models:** 
   + Bayesian Neural Network with Flipout Fully Connected Layer.('BNN_conv_flip')
   + Bayesian Neural Network with Non-Flipout Fully Connected Layer.('BNN_conv_nonflip')
   + Bayesian Neural Network with Flipout Convolutional Layers.('BNN_FC_flip')
   + Bayesian Neural Network with Non-Flipout Convolutional Layers.('BNN_FC_nonflip)
+  + Bayesian Neural Network with Flipout Convolutional Layers (3-VGG Blocks) for CIFAR-10 data.('CIFAR10_BNN_model')
   + Convolutional Neural Network ('CNN_Conv')
   + Fully Connected Neural Network ('CNN_FC')
-
-## **Files included:**  
-  + src/CNN_BNN_Model.py
-  + src/utlis.py
-  + src/GW_BNN/
-  + DATA/mnist.npz
-  + BalsamJobCreation/
-  + misc/
 
 
 ## **How to run the code:**

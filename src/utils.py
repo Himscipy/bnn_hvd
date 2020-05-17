@@ -5,6 +5,7 @@ import tensorflow as tf
 import horovod.tensorflow as hvd
 import numpy as np
 import time
+import matplotlib
 from tensorflow import keras
 import pickle
 import tensorflow_probability as tfp
@@ -20,7 +21,7 @@ try:
   HAS_SEABORN = True
 except ImportError:
   HAS_SEABORN = False
-  
+
 tfp_layers = tfp.layers
 
 tf.logging.set_verbosity(tf.logging.INFO)
@@ -137,6 +138,7 @@ class Data_API:
         
         if self.FLAGS.DATA_NAME == 'CIFAR-10':
             path = self.FLAGS.DATA_PATH
+            print(path)
             num_train_samples = 50000
 
             x_train = np.empty((num_train_samples, 3, 32, 32), dtype='uint8')
@@ -167,7 +169,7 @@ class Data_API:
             x_train /= 255
             x_test /= 255
 
-            if FLAGS.subtract_pixel_mean:
+            if self.FLAGS.subtract_pixel_mean:
                 x_train_mean = np.mean(x_train, axis=0)
                 x_train -= x_train_mean
                 x_test -= x_train_mean
@@ -296,6 +298,7 @@ class Model_CNN_BNN:
             (tfp_layers.Convolution2DFlipout(128,kernel_size=[3,3],activation=tf.nn.relu,padding='SAME',name='Conv_VI')),
             (tf.keras.layers.MaxPooling2D(pool_size=(2, 2), padding='same', strides=2,name='Max_III')),
             (tf.keras.layers.Flatten()),
-            (tfp_layers.DenseFlipout(128,activation=tf.nn.relu,padding='SAME',name='Dense_I')),
-            (tfp_layers.DenseFlipout(10,padding='SAME',name='Dense_II')),
+            (tfp_layers.DenseFlipout(128,activation=tf.nn.relu,name='Dense_I')),
+            (tfp_layers.DenseFlipout(10,name='Dense_II')),
             ])
+        return model
