@@ -55,7 +55,7 @@ Further, details about the Bayesian Network and Variationa inference for trainin
    - On the local machine Running:  
         + `horovodrun -n 2 -H localhost:2 python CNN_BNN_Model.py --flagfile=config_file.cfg`
 
-   - ALCF high performance Computing Cluster (Theta) Running: 
+   - ALCF high performance Computing Cluster (Theta): 
    ![](misc/Theta1600x900.jpg) 
          
         ```
