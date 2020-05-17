@@ -26,8 +26,7 @@ The Aleatoric uncertainity tries to capture noise inherent with the observations
 
 
 The Epistemic uncertainty is modelled by putting a prior distribution over the model parameters/weights and compute how these weights varies and converges, which are done in case of Bayesian Neural Networks. While in case of Aleoteric uncertainity are modelled by putting distibutions on the output of the model.
-
-
+Further, details about the Bayesian Network and Variationa inference for training can be found in the [Jupyter-Notebook](src/VariationalInferenceNotebook.ipynb).
 
 ## **Code Dependencies:**
  + python >= 3.5
