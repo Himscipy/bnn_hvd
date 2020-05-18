@@ -6,11 +6,7 @@
 
 The repo consist codes for preforming distributed training of Bayesian Neural Network models at scale using 
 High Performance Computing Cluster such as ALCF (Theta). The main purpose of the code is to act as a tutorial for getting 
-started with distibuted training of BNN's on High Performace Computing clusters. In addition, a advanced model is also added 
-with the source repository. The advance model is associated with an ADSP project for estimating the the Gravitational Wave parameters 
-using combination of Neural Networks and Bayesian Neural Network Layers. The dataset is available on Theta and restricted to the mmadsp users only, 
-the code is provided for the purpose of demonstration. For furthter details about [ADSP](https://www.alcf.anl.gov/science/adsp-allocation-program) contact 
-Argonne ALCF support.
+started with distibuted training of BNN's on High Performace Computing clusters. The BNN's are also used in one of my works for Gravitational Wave parameters link where Neural Networks were combined with Bayesian Neural Network Layers. The dataset and the code is available on Theta and restricted to the mmadsp users only. For furthter details about [ADSP](https://www.alcf.anl.gov/science/adsp-allocation-program) contact Argonne ALCF support.
 
 The BNN models are implemented using the Tensorflow-probability libarary. The data distribted training is performed using Horovod.
 
