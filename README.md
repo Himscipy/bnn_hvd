@@ -106,6 +106,7 @@ Further, details about the Bayesian Network and Variationa inference for trainin
 
 - **Contact**
   + Himanshu Sharma (himanshu90sharma@gmail.com)
+  + Elise Jennings (elise.jennings@gmail.com )
 
 - **Ackowledegment** 
 
