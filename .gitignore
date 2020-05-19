@@ -5,24 +5,13 @@ BalsamJobCreation/Tut_BalsamBNN/balsamdb/*
 
 BalsamJobCreation/Tut_BalsamBNN/server-info
 
-BNN_HVD_RUN/*
 
-Big_data/*
-cifar-10-batches-py/*
 
-vtune*/
 .vscode/
 /checkpoints/
-/CIFAR10/*
 
-/MNIST_data/*
 
-src/results/*
 
-/figs/*
-/slides/*
-/OUT
-/run
 
 *.output
 *.error
