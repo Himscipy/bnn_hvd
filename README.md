@@ -88,8 +88,7 @@ Further, details about the Bayesian Network and Variationa inference for trainin
 
 
 - **Research Articles:**  
-    
-    ****
+
     + [Bayesian Neural Networks at Scale: A Performance Analysis and Pruning Study](https://arxiv.org/pdf/2005.11619.pdf)
 
     **Papers related to Bayesian Neural Networks:**
