@@ -87,7 +87,11 @@ Further, details about the Bayesian Network and Variationa inference for trainin
     ![](misc/Repo_DemoResults_FC_layer_combine.png)
 
 
-- **Research Articles:**
+- **Research Articles:**  
+    
+    ****
+    + [Bayesian Neural Networks at Scale: A Performance Analysis and Pruning Study](https://arxiv.org/pdf/2005.11619.pdf)
+
     **Papers related to Bayesian Neural Networks:**
     + [Probabilistic Backpropagation for ScalableLearning of Bayesian Neural Networks](http://proceedings.mlr.press/v37/hernandez-lobatoc15.pdf) 
     + [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424)
@@ -97,7 +101,8 @@ Further, details about the Bayesian Network and Variationa inference for trainin
     
     **Papers for Gravitational Bayesian Model:**
      + [Deterministic and Bayesian Neural Networks for Low-latency Gravitational Wave Parameter Estimation of Binary Black Hole Mergers](https://arxiv.org/abs/1903.01998)
-
+    
+    
 
 - **Additional Resources**:
     + [Tensorflow Probalbility Examples](https://github.com/tensorflow/probability/blob/master/tensorflow_probability/examples)
